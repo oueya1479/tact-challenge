@@ -18,6 +18,11 @@ message(0x44) Refund {
   sender: Address;
 }
 
+message SomeMessage {
+  address: Address;
+  msg: Slice;
+}
+
 contract Task2 with Deployable {
   admin: Address;
 
