@@ -42,12 +42,12 @@ contract Task2 with Deployable {
   }
 
   receive(msg: Slice) {
-    send(SendParameters{
-      to: self.admin,
-      value: myBalance(),
-      mode: SendRemainingBalance + SendIgnoreErrors,
-      bounce: true,
-      body: SomeMessage{address: sender(), msg: msg}.toCell()
-    });
+    // send(SendParameters{
+    //   to: self.admin,
+    //   value: myBalance(),
+    //   mode: SendRemainingBalance + SendIgnoreErrors,
+    //   bounce: true,
+    //   body: SomeMessage{address: sender(), msg: msg}.toCell()
+    // });
   }
 }
