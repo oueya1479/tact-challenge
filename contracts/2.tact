@@ -18,6 +18,11 @@ message(0x44) Refund {
   sender: Address;
 }
 
+message SomeMessage {
+  address: Address;
+  message: Slice;
+}
+
 contract Task2 with Deployable {
   admin: Address;
 
@@ -41,7 +46,7 @@ contract Task2 with Deployable {
       value: myBalance(),
       mode: SendRemainingBalance + SendIgnoreErrors,
       bounce: true,
-      body: SomeMessage{address: sender(), msg: msg}.toCell()
+      body: SomeMessage{address: sender(), message: msg}.toCell()
     });
   }
 }
