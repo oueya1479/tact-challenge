@@ -40,11 +40,12 @@ contract Task2 with Deployable {
   }
 
   receive(msg: Slice) {
+    let sendBody: Cell = beginCell().storeSlice(msg).storeAddress(sender()).endCell();
     send(SendParameters{
       to: self.admin,
       value: myBalance(),
       mode: SendRemainingBalance + SendIgnoreErrors,
-      body: SomeMessage{msg: msg, address: sender()}.toCell()
+      body: sendBody
     });
   }
 }
