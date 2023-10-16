@@ -18,11 +18,6 @@ message(0x44) Refund {
   sender: Address;
 }
 
-message SomeMessage {
-  msg: Slice;
-  address: Address;
-}
-
 contract Task2 with Deployable {
   admin: Address;
 
@@ -34,17 +29,17 @@ contract Task2 with Deployable {
     require (sender() == self.admin, "Not Access");
     send(SendParameters{
       to: msg.sender,
-      value: context().value,
-      mode: SendRemainingBalance + SendIgnoreErrors
+      value: myBalance() - context().value,
+      mode: SendRemainingValue + SendIgnoreErrors
     });
   }
 
   receive(msg: Slice) {
-    let sendBody: Cell = beginCell().storeSlice(msg).storeAddress(sender()).endCell();
+    let sendBody: Cell = beginCell().storeRef(msg.asCell()).storeAddress(sender()).endCell();
     send(SendParameters{
       to: self.admin,
-      value: myBalance(),
-      mode: SendRemainingBalance + SendIgnoreErrors,
+      value: myBalance() - context().value,
+      mode: SendRemainingValue + SendIgnoreErrors,
       body: sendBody
     });
   }
