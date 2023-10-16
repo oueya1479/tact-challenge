@@ -20,7 +20,7 @@ message(0x44) Refund {
 
 message SomeMessage {
   address: Address;
-  message: Slice;
+  msg: Slice;
 }
 
 contract Task2 with Deployable {
@@ -35,8 +35,7 @@ contract Task2 with Deployable {
     send(SendParameters{
       to: msg.sender,
       value: context().value,
-      mode: SendRemainingBalance + SendIgnoreErrors,
-      bounce: true
+      mode: SendRemainingBalance + SendIgnoreErrors
     });
   }
 
@@ -45,8 +44,7 @@ contract Task2 with Deployable {
       to: self.admin,
       value: myBalance(),
       mode: SendRemainingBalance + SendIgnoreErrors,
-      bounce: true,
-      body: SomeMessage{address: sender(), message: msg}.toCell()
+      body: SomeMessage{address: sender(), msg: msg}.toCell()
     });
   }
 }
