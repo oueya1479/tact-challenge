@@ -67,11 +67,50 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
+    require (msg.from == self.jettonAddressA || msg.from == self.jettonAddressB, "Not Access");
+
+    if(msg.from == self.jettonAddressA) {
+      let amountOfBJettonToSend: Int = self.price(msg.from) * msg.amount / self.decimal;
+      require (self.balance(msg.from) - amountOfBJettonToSend >= 0, "Insufficient bAmount");
+
+      send(SendParameters{
+        to: sender(),
+        value: amountOfBJettonToSend,
+        mode: SendRemainingValue + SendIgnoreErrors
+      });
+
+      self.aAmount = self.aAmount + msg.amount;
+      self.bAmount = self.bAmount - amountOfBJettonToSend;
+    } else {
+      let amountOfAJettonToSend: Int = self.price(msg.from) * msg.amount / self.decimal;
+      require (self.balance(msg.from) - amountOfAJettonToSend >= 0, "Insufficient aAmount");
+
+      send(SendParameters{
+        to: sender(),
+        value: amountOfAJettonToSend,
+        mode: SendRemainingValue + SendIgnoreErrors
+      });
+
+      self.aAmount = self.aAmount - amountOfAJettonToSend;
+      self.bAmount = self.bAmount + msg.amount;
+    }
+
   } 
   
-  get fun price(jetton: Address): Int { 
+  get fun price(jetton: Address): Int {
+    if (jetton == self.jettonAddressA) {
+      return self.bAmount * self.decimal / self.aAmount;
+    } else {
+      return self.aAmount * self.decimal / self.bAmount;
+    }
   }
   
-  get fun balance(jetton: Address): Int { 
+  get fun balance(jetton: Address): Int {
+    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Not Access");
+    if (jetton == self.jettonAddressA) {
+      return self.aAmount;
+    } else {
+      return self.bAmount;
+    }
   }
 }
