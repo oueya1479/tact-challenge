@@ -94,9 +94,9 @@ contract Task3 with Deployable {
   get fun price(jetton: Address): Int {
     require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
     if (jetton == self.jettonAddressA) {
-      return self.bAmount * self.decimal / self.aAmount;
-    } else {
       return self.aAmount * self.decimal / self.bAmount;
+    } else {
+      return self.bAmount * self.decimal / self.aAmount;
     }
   }
   
@@ -128,9 +128,9 @@ contract Task3 with Deployable {
 
   fun pricef(jetton: Address): Int {
     if (jetton == self.jettonAddressA) {
-      return self.aAmount * self.decimal / self.bAmount;
-    } else {
       return self.bAmount * self.decimal / self.aAmount;
+    } else {
+      return self.aAmount * self.decimal / self.bAmount;
     }
   }
   
