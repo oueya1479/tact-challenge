@@ -84,32 +84,32 @@ contract Task4 with Deployable {
 
     require(sender() == self.prevOwner, "Invalid sender");
     require(self.deadline != null, "Empty");
-    if (now() >= self.deadline!!) {
+    if (now() < self.deadline!!) {
       send(SendParameters{
         to: sender(),
         value: 0,
         mode: SendIgnoreErrors,
         body: "NFT is still locked".asComment()
       });
+    } else {
+      send(SendParameters{
+        to: msg.nftAddress,
+        value: myBalance() - context().value,
+        mode: SendRemainingValue + SendIgnoreErrors,
+        body: Transfer{
+          queryId: msg.queryId,
+          newOwner: self.prevOwner!!,
+          responseDestination: myAddress(),
+          customPayload: null,
+          forwardAmount: ton("0.01"),
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
+
+      self.nft = null;
+      self.deadline = null;
+      self.prevOwner = null;
     }
-
-    send(SendParameters{
-      to: msg.nftAddress,
-      value: myBalance() - context().value,
-      mode: SendRemainingValue + SendIgnoreErrors,
-      body: Transfer{
-        queryId: msg.queryId,
-        newOwner: self.prevOwner!!,
-        responseDestination: myAddress(),
-        customPayload: null,
-        forwardAmount: ton("0.01"),
-        forwardPayload: emptySlice()
-      }.toCell()
-    });
-
-    self.nft = null;
-    self.deadline = null;
-    self.prevOwner = null;
   }
 
   get fun time(): Int {
