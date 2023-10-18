@@ -84,43 +84,10 @@ contract Task3 with Deployable {
       let toJetton: Address = self.reversef(ctx.sender);
 
       if (self.balancef(toJetton) - amountOfJettonToSend < 0) {
-        send(SendParameters{
-          to: fromJetton,
-          value: 0,
-          bounce: false,
-          body: TokenTransfer{
-            queryId: msg.queryId,
-            amount: msg.amount,
-            destination: msg.from,
-            customPayload: emptyCell(),
-            responseDestination: myAddress(),
-            forwardTonAmount: 0,
-            forwardPayload: emptySlice()
-          }.toCell()
-        });
+        self.sendParameter(fromJetton, msg.amount, msg.queryId, msg.from);
       } else {
-        send(SendParameters{
-          to: toJetton,
-          value: 0,
-          bounce: false,
-          body: TokenTransfer{
-            queryId: msg.queryId,
-            amount: amountOfJettonToSend,
-            destination: msg.from,
-            customPayload: emptyCell(),
-            responseDestination: myAddress(),
-            forwardTonAmount: 0,
-            forwardPayload: emptySlice()
-          }.toCell()
-        });
-
-        if (fromJetton == self.jettonAddressA) {
-          self.aAmount = self.aAmount + msg.amount;
-          self.bAmount = self.bAmount - amountOfJettonToSend;
-        } else {
-          self.aAmount = self.aAmount - amountOfJettonToSend;
-          self.bAmount = self.bAmount + msg.amount;
-        }
+        self.sendParameter(toJetton, amountOfJettonToSend, msg.queryId, msg.from);
+        self.update(fromJetton, msg.amount, amountOfJettonToSend);
       }
     }
 
@@ -144,8 +111,24 @@ contract Task3 with Deployable {
     }
   }
 
+  fun sendParameter(to: Address, amount: Int, queryId: Int, destination: Address) {
+    send(SendParameters{
+      to: to,
+      value: 0,
+      bounce: false,
+      body: TokenTransfer{
+        queryId: queryId,
+        amount: amount,
+        destination: destination,
+        customPayload: emptyCell(),
+        responseDestination: myAddress(),
+        forwardTonAmount: 0,
+        forwardPayload: emptySlice()
+      }.toCell()
+    });
+  }
+
   fun pricef(jetton: Address): Int {
-    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
     if (jetton == self.jettonAddressA) {
       return self.bAmount * self.decimal / self.aAmount;
     } else {
@@ -154,7 +137,6 @@ contract Task3 with Deployable {
   }
   
   fun balancef(jetton: Address): Int {
-    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
     if (jetton == self.jettonAddressA) {
       return self.aAmount;
     } else {
@@ -163,11 +145,20 @@ contract Task3 with Deployable {
   }
 
   fun reversef(jetton: Address): Address {
-    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
     if (jetton == self.jettonAddressA) {
       return self.jettonAddressB;
     } else {
       return self.jettonAddressA;
+    }
+  }
+
+  fun update(jetton: Address, amount: Int, sendAmount: Int) {
+    if (jetton == self.jettonAddressA) {
+      self.aAmount = self.aAmount + amount;
+      self.bAmount = self.bAmount - sendAmount;
+    } else {
+      self.aAmount = self.aAmount - sendAmount;
+      self.bAmount = self.bAmount + amount;
     }
   }
 }
