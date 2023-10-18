@@ -72,14 +72,12 @@ contract Task3 with Deployable {
     require (ctx.sender == self.jettonAddressA || ctx.sender == self.jettonAddressB, "Access denied");
 
     if (msg.from == self.owner) {
-      if (ctx.sender == self.jettonAddressA) {
-        self.aAmount = self.aAmount + msg.amount;
-      } else {
-        self.bAmount = self.bAmount + msg.amount;
-      }
-    } else {
-      let amountOfJettonToSend: Int = self.pricef(ctx.sender) * msg.amount / self.decimal;
 
+      self.addAmount(ctx.sender, msg.amount);
+
+    } else {
+      
+      let amountOfJettonToSend: Int = self.pricef(ctx.sender) * msg.amount / self.decimal;
       let fromJetton: Address = ctx.sender;
       let toJetton: Address = self.reversef(ctx.sender);
 
@@ -122,7 +120,7 @@ contract Task3 with Deployable {
         destination: destination,
         customPayload: emptyCell(),
         responseDestination: myAddress(),
-        forwardTonAmount: 0,
+        forwardTonAmount: ton("0.01"),
         forwardPayload: emptySlice()
       }.toCell()
     });
@@ -158,6 +156,14 @@ contract Task3 with Deployable {
       self.bAmount = self.bAmount - sendAmount;
     } else {
       self.aAmount = self.aAmount - sendAmount;
+      self.bAmount = self.bAmount + amount;
+    }
+  }
+
+  fun addAmount(sender: Address, amount: Int) {
+    if (sender == self.jettonAddressA) {
+      self.aAmount = self.aAmount + amount;
+    } else {
       self.bAmount = self.bAmount + amount;
     }
   }
