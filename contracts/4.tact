@@ -28,8 +28,8 @@ import "@stdlib/deploy";
 
 message(0x05138d91) OwnershipAssigned {
     queryId: Int as uint64;
-    prevOwner: Address;
-    forwardPayload: Slice as remaining; 
+    prevOwner: Address; // NFT 송신자 주소
+    forwardPayload: Slice as remaining; // 남은 시간이 담김
 }
 
 message(0x5fcc3d14) Transfer { 
@@ -41,30 +41,65 @@ message(0x5fcc3d14) Transfer {
     forwardPayload: Slice as remaining; 
 }
 
-message NftWithdrawal {
+message NftWithdrawal { // 잠긴 NFT의 인출을 요청
   queryId: Int as uint64;
   nftAddress: Address;
 }
 
 contract Task4 with Deployable {
   seed: Int as uint128;
+  deadline: Int?;
+  nft: Address?;
+  prevOwner: Address?;
   
   init(seed: Int) {
     self.seed = seed; // needed to deploy multiple smart contracts copies from one admin address
   }
 
   receive(msg: OwnershipAssigned) {
+
+    require (self.nft != null, "incoming nft back to the sender.");
+
+    self.nft = sender();
+    self.deadline = msg.forwardPayload.loadUint(32);
+    self.prevOwner = msg.prevOwner;
+
   }
 
   receive(msg: NftWithdrawal) {
+
+    require(sender() == self.prevOwner, "Invalid sender");
+    require(self.deadline != null, "Empty");
+    require(now() > self.deadline!!, "NFT is still locked");
+
+    send(SendParameters{
+      to: self.prevOwner!!,
+      value: myBalance() - context().value,
+      mode: SendRemainingValue + SendIgnoreErrors,
+      body: Transfer{
+        queryId: 0,
+        newOwner: self.prevOwner!!,
+        responseDestination: myAddress(),
+        customPayload: null,
+        forwardAmount: ton("0.01"),
+        forwardPayload: emptySlice()
+      }.toCell()
+    });
+
+    self.nft = null;
+    self.deadline = null;
+    self.prevOwner = null;
   }
 
   get fun time(): Int {
+    return self.seed;
   }
 
   get fun nft(): Address? {
+    return self.nft;
   }
 
   get fun owner(): Address? {
+    return self.prevOwner;
   }
 }
