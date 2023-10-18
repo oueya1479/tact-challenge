@@ -71,35 +71,49 @@ contract Task3 with Deployable {
     let ctx: Context = context();
 
     let amountOfJettonToSend: Int = self.price(ctx.sender) * msg.amount / self.decimal;
-    let to: Address = newAddress(0, 0);
-    let amount: Int = 0;
 
-    if (self.balance(ctx.sender) - amountOfJettonToSend < 0) {
-      to = ctx.sender;
-      amount = msg.amount;
+    let fromJetton: Address = ctx.sender;
+    let toJetton: Address = self.reverse(ctx.sender);
+
+    if (self.balance(toJetton) - amountOfJettonToSend < 0) {
+      send(SendParameters{
+        to: fromJetton,
+        value: 0,
+        bounce: false,
+        body: TokenTransfer{
+          queryId: msg.queryId,
+          amount: msg.amount,
+          destination: msg.from,
+          customPayload: emptyCell(),
+          responseDestination: myAddress(),
+          forwardTonAmount: 0,
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
     } else {
-      if (ctx.sender == self.jettonAddressA) {
-        to = self.jettonAddressB;
-      } else {
-        to = self.jettonAddressA;
-      }
-      amount = amountOfJettonToSend;
-    }
+      send(SendParameters{
+        to: toJetton,
+        value: 0,
+        bounce: false,
+        body: TokenTransfer{
+          queryId: msg.queryId,
+          amount: amountOfJettonToSend,
+          destination: msg.from,
+          customPayload: emptyCell(),
+          responseDestination: myAddress(),
+          forwardTonAmount: 0,
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
 
-    send(SendParameters{
-      to: to,
-      value: 0,
-      bounce: false,
-      body: TokenTransfer{
-        queryId: msg.queryId,
-        amount: amount,
-        destination: msg.from,
-        customPayload: emptyCell(),
-        responseDestination: myAddress(),
-        forwardTonAmount: 0,
-        forwardPayload: emptySlice()
-      }.toCell()
-    });
+      if (fromJetton == self.jettonAddressA) {
+        self.aAmount = self.aAmount + msg.amount;
+        self.bAmount = self.bAmount - amountOfJettonToSend;
+      } else {
+        self.aAmount = self.aAmount - amountOfJettonToSend;
+        self.bAmount = self.bAmount + msg.amount;
+      }
+    }
   } 
   
   get fun price(jetton: Address): Int {
@@ -119,6 +133,15 @@ contract Task3 with Deployable {
       return self.aAmount;
     } else {
       return self.bAmount;
+    }
+  }
+
+  get fun reverse(jetton: Address): Address {
+    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
+    if (jetton == self.jettonAddressA) {
+      return self.jettonAddressB;
+    } else {
+      return self.jettonAddressA;
     }
   }
 }
