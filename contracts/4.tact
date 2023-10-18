@@ -92,7 +92,7 @@ contract Task4 with Deployable {
   }
 
   get fun time(): Int {
-    return self.seed;
+    return self.deadline!!;
   }
 
   get fun nft(): Address? {
