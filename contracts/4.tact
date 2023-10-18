@@ -58,11 +58,25 @@ contract Task4 with Deployable {
 
   receive(msg: OwnershipAssigned) {
 
-    require (self.nft == null, "incoming nft back to the sender.");
-
-    self.nft = sender();
-    self.deadline = msg.forwardPayload.loadUint(32);
-    self.prevOwner = msg.prevOwner;
+    if (self.nft != null) {
+      send(SendParameters{
+        to: sender(),
+        value: 0,
+        mode: SendRemainingValue + SendIgnoreErrors,
+        body: Transfer{
+          queryId: 0,
+          newOwner: msg.prevOwner,
+          responseDestination: myAddress(),
+          customPayload: null,
+          forwardAmount: ton("0.01"),
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
+    } else {
+      self.nft = sender();
+      self.deadline = msg.forwardPayload.loadUint(32);
+      self.prevOwner = msg.prevOwner;
+    }
 
   }
 
