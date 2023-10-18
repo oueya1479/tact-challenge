@@ -69,13 +69,14 @@ contract Task3 with Deployable {
   receive(msg: TokenNotification) {
 
     let ctx: Context = context();
+    require (ctx.sender == self.jettonAddressA || ctx.sender == self.jettonAddressB, "Access denied");
 
-    let amountOfJettonToSend: Int = self.price(ctx.sender) * msg.amount / self.decimal;
+    let amountOfJettonToSend: Int = self.pricef(ctx.sender) * msg.amount / self.decimal;
 
     let fromJetton: Address = ctx.sender;
-    let toJetton: Address = self.reverse(ctx.sender);
+    let toJetton: Address = self.reversef(ctx.sender);
 
-    if (self.balance(toJetton) - amountOfJettonToSend < 0) {
+    if (self.balancef(toJetton) - amountOfJettonToSend < 0) {
       send(SendParameters{
         to: fromJetton,
         value: 0,
@@ -136,7 +137,27 @@ contract Task3 with Deployable {
     }
   }
 
-  get fun reverse(jetton: Address): Address {
+  fun pricef(jetton: Address): Int {
+    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
+    if (jetton == self.jettonAddressA) {
+      require(self.bAmount > 0, "Access denied");
+      return (self.aAmount * self.decimal) / self.bAmount;
+    } else {
+      require(self.aAmount > 0, "Access denied");
+      return self.aAmount * self.decimal / self.bAmount;
+    }
+  }
+  
+  fun balancef(jetton: Address): Int {
+    require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
+    if (jetton == self.jettonAddressA) {
+      return self.aAmount;
+    } else {
+      return self.bAmount;
+    }
+  }
+
+  fun reversef(jetton: Address): Address {
     require (jetton == self.jettonAddressA || jetton == self.jettonAddressB, "Access denied");
     if (jetton == self.jettonAddressA) {
       return self.jettonAddressB;
