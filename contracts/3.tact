@@ -34,8 +34,8 @@ import "@stdlib/deploy";
 
 message(0x7362d09c) TokenNotification {
     queryId: Int as uint64;
-    amount: Int as coins;
-    from: Address;
+    amount: Int as coins; // 얼만큼 보냈는지
+    from: Address; // 보낸 사람
     forwardPayload: Slice as remaining;
 }
 
@@ -67,14 +67,39 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
-    require (msg.from == self.jettonAddressA || msg.from == self.jettonAddressB, "Access denied");
-    
-    if (msg.from == self.jettonAddressA) {
-        self.aAmount = self.aAmount + msg.amount;
+
+    let ctx: Context = context();
+
+    let amountOfJettonToSend: Int = self.price(ctx.sender) * msg.amount / self.decimal;
+    let to: Address = newAddress(0, 0);
+    let amount: Int = 0;
+
+    if (self.balance(ctx.sender) - amountOfJettonToSend < 0) {
+      to = ctx.sender;
+      amount = msg.amount;
     } else {
-        self.bAmount = self.bAmount + msg.amount;
+      if (ctx.sender == self.jettonAddressA) {
+        to = self.jettonAddressB;
+      } else {
+        to = self.jettonAddressA;
+      }
+      amount = amountOfJettonToSend;
     }
 
+    send(SendParameters{
+      to: to,
+      value: 0,
+      bounce: false,
+      body: TokenTransfer{
+        queryId: msg.queryId,
+        amount: amount,
+        destination: msg.from,
+        customPayload: emptyCell(),
+        responseDestination: myAddress(),
+        forwardTonAmount: 0,
+        forwardPayload: emptySlice()
+      }.toCell()
+    });
   } 
   
   get fun price(jetton: Address): Int {
