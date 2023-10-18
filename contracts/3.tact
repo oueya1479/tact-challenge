@@ -115,10 +115,10 @@ contract Task3 with Deployable {
       value: 0,
       bounce: false,
       body: TokenTransfer{
-        queryId: queryId,
+        queryId: 0,
         amount: amount,
         destination: destination,
-        customPayload: emptyCell(),
+        customPayload: null,
         responseDestination: myAddress(),
         forwardTonAmount: ton("0.01"),
         forwardPayload: emptySlice()
@@ -150,8 +150,8 @@ contract Task3 with Deployable {
     }
   }
 
-  fun update(jetton: Address, amount: Int, sendAmount: Int) {
-    if (jetton == self.jettonAddressA) {
+  fun update(fromJetton: Address, amount: Int, sendAmount: Int) {
+    if (fromJetton == self.jettonAddressA) {
       self.aAmount = self.aAmount + amount;
       self.bAmount = self.bAmount - sendAmount;
     } else {
