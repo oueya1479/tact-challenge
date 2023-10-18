@@ -58,7 +58,7 @@ contract Task4 with Deployable {
 
   receive(msg: OwnershipAssigned) {
 
-    require (self.nft != null, "incoming nft back to the sender.");
+    require (self.nft == null, "incoming nft back to the sender.");
 
     self.nft = sender();
     self.deadline = msg.forwardPayload.loadUint(32);
