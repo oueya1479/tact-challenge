@@ -73,7 +73,7 @@ contract Task4 with Deployable {
     require(now() > self.deadline!!, "NFT is still locked");
 
     send(SendParameters{
-      to: self.prevOwner!!,
+      to: self.nft!!,
       value: myBalance() - context().value,
       mode: SendRemainingValue + SendIgnoreErrors,
       body: Transfer{
