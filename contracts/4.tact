@@ -64,10 +64,10 @@ contract Task4 with Deployable {
         value: 0,
         mode: SendIgnoreErrors,
         body: Transfer{
-          queryId: msg.queryId,
+          queryId: 0,
           newOwner: msg.prevOwner,
-          responseDestination: myAddress(),
           customPayload: null,
+          responseDestination: myAddress(),
           forwardAmount: ton("0.01"),
           forwardPayload: emptySlice()
         }.toCell()
@@ -87,14 +87,14 @@ contract Task4 with Deployable {
     if (now() < self.deadline!!) {
       send(SendParameters{
         to: sender(),
-        value: 0,
+        value: context().value,
         mode: SendIgnoreErrors,
         body: "NFT is still locked".asComment()
       });
     } else {
       send(SendParameters{
         to: msg.nftAddress,
-        value: myBalance() - context().value,
+        value: context().value,
         mode: SendRemainingValue + SendIgnoreErrors,
         body: Transfer{
           queryId: msg.queryId,
@@ -113,7 +113,7 @@ contract Task4 with Deployable {
   }
 
   get fun time(): Int {
-    return self.deadline!!;
+    return now() - self.deadline!!;
   }
 
   get fun nft(): Address? {

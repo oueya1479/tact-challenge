@@ -1,3 +1,4 @@
+import '@ton-community/test-utils';
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
 import { toNano } from 'ton-core';
 import { Task3 } from '../wrappers/Task3';
@@ -28,8 +29,5 @@ describe('Task3', () => {
         });
     });
 
-    it('test', async () => {
-    });
+    it('test', async () => {});
 });
-
-
