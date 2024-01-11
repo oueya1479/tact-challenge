@@ -29,7 +29,7 @@ contract Task2 with Deployable {
     require (sender() == self.admin, "Not Access");
     send(SendParameters{
       to: msg.sender,
-      value: myBalance() - context().value,
+      value: 0,
       mode: SendRemainingValue + SendIgnoreErrors
     });
   }
